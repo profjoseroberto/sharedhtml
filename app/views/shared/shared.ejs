@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-br" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Atividade Colaborativa | SharedHTML</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="css/estilologin.css"> -->
+
+
+  <link rel="stylesheet" href="./lib/codemirror.css">
+  <link rel="stylesheet" href="/css/master.css">
+  <script src="./lib/codemirror.js"> </script>
+  <script src="./mode/xml/xml.js"> </script>
+  <script src=" ./mode/javascript/javascript.js"> </script>
+  <script src="./mode/css/css.js"> </script>
+  <script src=" ./mode/htmlmixed/htmlmixed.js"> </script>
+
+  <link rel="stylesheet" href="./addon/hint/show-hint.css">
+  <link rel="stylesheet" href="./theme/material.css">
+
+  <script src="/js/jquery-3.3.1.slim.min.js"></script>
+
+  <script src="./addon/hint/show-hint.js"></script>
+  <script src="./addon/hint/xml-hint.js"></script>
+  <script src="./addon/hint/html-hint.js"></script>
+  <script src="./addon/edit/closetag.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-dark bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><code class="logo">&lsaquo;SharedHTML&rsaquo;</code></a>
+    <!--<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">-->
+    <ul class="navbar-nav px-3">
+      <li class="nav-item text-nowrap">
+        <!--<section class="container login"> </section>-->
+        <!--<a class="nav-link" href="#">Sign out</a>-->
+        <span class="nomeUsuario badge badge-primary">usuário: </span>
+        <button id="codInicial" class="btn btn-sm">Exportar Código Inicial</button>
+        <button id="codShared" class="btn btn-sm">Exportar Código Compartilhado</button>
+        <button id="conversas" class="btn btn-sm">Exportar Conversas</button>
+        <!-- <span class="endIp badge badge-light">ip: </span> -->
+        <a href="#" id="sair" class="btn btn-sm btn-danger">sair</a>
+      </li>
+    </ul>
+  </nav>
+  <main class="container-fluid p-0">
+    <div class="row">
+      <div class="col-md-3" style="overflow: scroll;">
+        <h1 class="h5 title-section">Atividade</h1>
+        <div id="atividade" style="padding: 5px;">
+
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <h1 class="h5 title-section">Seu código inicial</h1>
+        <textarea style="width:100%; min-height: 200px;" id="txtmeucodigo" readonly></textarea>
+
+        <h1 class="h5 title-section">HTML Colaborativo</h1>
+        <span>Escreva com seu parceiro de atividade uma solução comum para atividade</span>
+        <textarea id="code" name="code" ondragstart="return false" contenteditable="true" spellcheck="false">
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title</title>
+    </head>
+    <body>
+
+    </body>
+</html>
+        </textarea>
+
+        <h1 class="h5 title-section">Resultado</h1>
+
+        <iframe id=preview></iframe>
+      </div>
+
+      <div class="col-md-3" style="height: 100vh;">
+        <h1 class="h5 title-section">Chat</h1>
+
+        <ul id="messages" style="height: 75vh; overflow: scroll;"></ul>
+        <form action="" style="height: 10vh;">
+
+          <div class="input-group">
+            <input type="text" class="form-control w3-input" id="m" placeholder="Escreva aqui" aria-describedby="btnenviar" required autocomplete="off">
+            <div class="input-group-prepend">
+              <button class="input-group-text" id="btnenviar">Enviar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var delay;
+    // Initialize CodeMirror editor with a nice html5 canvas demo.
+    var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+      mode: 'text/html',
+      lineWrapping: true,
+      lineNumbers: true,
+      // autoCloseTags: true,
+      theme: "material",
+      indentWithTabs: true,
+      indentAuto: true
+      // extraKeys: {
+      //     "Ctrl-Space": "autocomplete"
+      // }
+    });
+    //detectando a escrita
+    editor.on("change", function() {
+      clearTimeout(delay);
+      delay = setTimeout(updatePreview, 300);
+    });
+
+    if (sessionStorage.getItem('codigoCompartilhado') == null) {
+      sessionStorage.setItem('codigoCompartilhado', editor.getValue());
+    } else {
+      editor.setValue(sessionStorage.getItem('codigoCompartilhado'));
+    }
+
+    function updatePreview() {
+      var previewFrame = document.getElementById('preview');
+      sessionStorage.setItem('codigoCompartilhado', editor.getValue());
+      var preview = previewFrame.contentDocument || previewFrame.contentWindow.document;
+      preview.open();
+      preview.write(editor.getValue());
+      preview.close();
+    }
+    setTimeout(updatePreview, 300);
+  </script>
+
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- //CHAT -->
+  <script src="/js/client/chat.js"></script>
+
+  <script>
+    $(function() {
+      var sala = sessionStorage.getItem('sala');
+      // escrita colaborativa
+      var socketShared = io();
+      socketShared.on("connect", function() {
+        socketShared.emit('shared', sala);
+      });
+
+      // var companheiro = sessionStorage.getItem('companheiro') + ":3000";
+      // if (sessionStorage.getItem('meuIp') == sessionStorage.getItem('companheiro')) {
+      //   var socketShared = io();
+      //   console.log("servidor");
+      // } else {
+      //   var socketShared = io(companheiro);
+      //   console.log("cliente");
+      // }
+
+      socketShared.on('refresh', function(data) {
+        editor.setValue(data.body);
+      });
+      socketShared.on('change', function(data, sala_) {
+        // console.log(sala);
+        // console.log(sala_);
+        if (sala == sala_) {
+          editor.replaceRange(data.text, data.from, data.to);
+        }
+      });
+      editor.on('change', function(i, op) {
+        socketShared.emit('change', op, sala);
+        socketShared.emit('refresh', editor.getValue());
+      });
+      $('#txtmeucodigo').val((sessionStorage.getItem('codigo')) ? sessionStorage.getItem('codigo') : "");
+    })
+  </script>
+
+  <script src="js/login/Login.js"></script>
+  <script src="/js/client/carregarAtividade.js"></script>
+  <script src="js/filesaverjs.js"></script>
+
+
+
+  <script>
+    $("#codInicial").on('click', () => {
+      exportarArquivo('codigo')
+    });
+    $("#codShared").on('click', () => {
+      exportarArquivo('codigoCompartilhado')
+    });
+    $("#conversas").on('click', () => {
+      exportarArquivo('chat')
+    });
+
+    function exportarArquivo(sessao) {
+      var blob = new Blob([sessionStorage.getItem(sessao)], {
+        type: "application/json;utf-8"
+      })
+      saveAs(blob, 'codigo.html');
+    }
+  </script>
+  <script src="/js/client/carregarDadosInteracao.js"></script>
+
+</body>
+
+</html>

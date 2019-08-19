@@ -1,0 +1,27 @@
+{
+  "name": "sharedhtml",
+  "version": "1.0.0",
+  "description": "Objeto de aprendizagem compartilhada de HTML",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app"
+  },
+  "author": "José Roberto Cruz e Silva",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "express-load": "^1.1.16",
+    "express-validator": "^5.3.0",
+    "method-override": "^3.0.0",
+    "mysql": "^2.16.0",
+    "realtime-editor": "^0.5.0",
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "supertest": "^3.3.0"
+  }
+}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Professor - acompanhamento| Sharedhtml</title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- <link rel = "stylesheet" href = "/css/host.css"> -->
+  <!-- <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"> -->
+  <!-- <link href="https://fonts.googleapis.com/css?family=Tajawal" rel="stylesheet"> -->
+  <link rel="stylesheet" href="/css/master.css">
+  <script src="/js/jquery-3.3.1.slim.min.js"></script>
+
+</head>
+
+<body>
+  <nav class="navbar navbar-dark bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><code class="logo">&lsaquo;SharedHTML&rsaquo;</code> | Professor</a>
+    <!--<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">-->
+    <ul class="navbar-nav px-3">
+      <li class="nav-item text-nowrap">
+        <!--<section class="container login"> </section>-->
+        <!--<a class="nav-link" href="#">Sign out</a>-->
+        <!-- <span class="nomeUsuario badge badge-primary">usuário: </span>
+        <a href="/chat" class="btn btn-sm btn-success">Próxima etapa</a>
+        <span class="endIp badge badge-light">ip: </span>
+        <a href="#" id="sair" class="btn btn-sm btn-danger">sair</a> -->
+      </li>
+    </ul>
+  </nav>
+  <main class="container-fluid p-0" style="min-height:100vh;">
+    <div class="row">
+      <div class="col-md-3 ">
+        <!-- <div style="background: #eee; padding: 10px;"> -->
+        <h1 class="title-section h5">Estudantes participantes</h1>
+        <p>Tecle no usuário que deseja visualizar suas 'Produções'</p>
+        <!-- <form id="formId"> -->
+        <!-- <button id='start' type="submit" class="btn btn-success">Iniciar atividade</button> -->
+        <ul style="overflow: auto; min-height: 81vh;" id='players'></ul>
+        <!-- <br> -->
+        <!-- </form> -->
+
+        <!-- </div> -->
+      </div>
+
+      <div class="col-md-6" style="">
+        <h1 class="title-section h5">Atividade</h1>
+
+        <button type="button" class="btn btn-primary" id="btnAtividade">Atualizar</button><br><br>
+        <textarea name="name" style="min-height: 70vh; width: 100%;" id="descricaoAtividade"></textarea>
+      </div>
+      <div class="col-md-3">
+        <h1 class="title-section h5">Chat(<span id="salaSelecionada"></span>)</h1>
+        <!-- <label for="sala">Escolha o grupo que deseja conversar</label>
+        <input type="text" name="sala" id="sala"> -->
+        <hr>
+
+        <ul id="messages" style="min-height: 60vh; max-height:450px;overflow: auto;"></ul>
+        <form action="" style="min-height: 5vh;">
+          <div class="input-group">
+            <input type="text" class="form-control w3-input" id="m" placeholder="Escreva aqui" aria-describedby="btnenviar" required autocomplete="off">
+            <div class="input-group-prepend">
+              <button class="input-group-text" id="btnenviar">Enviar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <section class="container-fluid p-0">
+    <hr>
+    <h1>Produções de <span class="text-success" id="estudanteSelecionado">estudante</span></h1>
+
+    <div class="row">
+      <div class="col-md-4">
+        <h1 class="title-section h5">Código individual</h1>
+        <textarea id="individual" style="width:100%; min-height: 500px;">
+
+        </textarea>
+      </div>
+      <div class="col-md-4">
+        <h1 class="title-section h5">Código compartilhado</h1>
+        <textarea id="compartilhado" style="width:100%; min-height: 500px;">
+
+        </textarea>
+      </div>
+      <div class="col-md-4">
+        <h1 class="title-section h5">Conversas do usuário</h1>
+        <ul id="chat" style="width:100%; height: 500px; overflow: auto;">
+
+        </ul>
+      </div>
+  </section>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/lib/deparam.js"></script>
+  <!-- <script src="/js/client/chat.js"></script> -->
+
+  <script>
+    $(function() {
+      var socket = io();
+      carregarEstudantes();
+
+      function carregarEstudantes() {
+        var estudantes = sessionStorage.getItem('estudantes');
+        var jsonEstudantes = JSON.parse(estudantes);
+        // console.log(estudantes);
+        var nome = "";
+        var sala = "";
+        for (var i = 0; i < jsonEstudantes.length; i++) {
+          nome = jsonEstudantes[i].name;
+          sala = jsonEstudantes[i].value;
+          estudante = "<li><button  class='ver badge badge-primary' data-user='" + nome + "'>" + nome + "</button>@<button class='entrar-sala badge' data-room='" + sala + "'>" + sala + "</button></li>";
+          $("#players").append(estudante);
+        }
+      }
+
+      $(".ver").on("click", function() {
+        var estudante = $(this).attr('data-user');
+        $("#individual").val("");
+        $("#compartilhado").val("");
+        $("#chat").html("");
+        $("#estudanteSelecionado").text(estudante);
+        sessionStorage.setItem('estudante', estudante);
+        // var estudante = $(this"a[estudante]").val();
+        // console.log(estudante);
+        socket.on("connection", function() {
+          socket.broadcast.emit('estudanteSelecionado', sessionStorage.getItem('estudante'));
+        });
+
+        socket.on('getCodigosAlunos', function(data) {
+          if (data.usuario == estudante) {
+            $("#individual").val("");
+            $("#compartilhado").val("");
+            $("#chat").html("");
+            $("#individual").val(data.codigo);
+            $("#compartilhado").val(data.codigoCompartilhado);
+            $("#chat").html(data.chat);
+          }
+        });
+      });
+      //ver alunos
+
+      if (sessionStorage.getItem('estudante')) {
+        $("#estudanteSelecionado").text(sessionStorage.getItem('estudante'));;
+      } else {
+        $("#estudanteSelecionado").text("[selecione um estudante]");
+      }
+
+      sessionStorage.setItem('nomeUsuario', 'professor');
+      const socket2 = io();
+      const msg = "";
+      //selecionar sala para o chat
+      $(".entrar-sala").on("click", function(e) {
+        // if (sessionStorage.getItem('sala')) {
+        socket2.emit('sair sala', sessionStorage.getItem('sala'), $(this).attr('data-room'));
+        // }
+        // socket2 = io();
+
+        sessionStorage.setItem('sala', $(this).attr('data-room'));
+        if (sessionStorage.getItem('sala')) {
+          socket2.emit("removerDaSala", sessionStorage.getItem('sala'));
+          $('#messages').html("");
+          // sessionStorage.setItem('sala', $(this).attr('data-room'));
+        }
+
+        $("#salaSelecionada").text(sessionStorage.getItem('sala'));
+        chat();
+      });
+      // });
+
+      // if (sessionStorage.getItem('nomeUsuario') && sessionStorage.getItem('sala')) {
+      //   chat();
+      // }
+
+      function chat() {
+        socket2 = io();
+        socket2.on("connect", function() {
+          socket2.emit('chat', sessionStorage.getItem('sala'), sessionStorage.getItem('nomeUsuario'));
+          rolagemDoScroll();
+        });
+        //recebendo e inserindo na tela
+
+
+        socket2.on("novo usuario", function(data) {
+          $('#messages').append($('<li>').html(data));
+        });
+      }
+
+      $('form').submit(function(e) {
+        e.preventDefault();
+        var msg = $('#m').val();
+        socket2.emit("enviar mensagem", sessionStorage.getItem('sala'), sessionStorage.getItem('nomeUsuario'), msg);
+        $(this).trigger("reset");
+        return false;
+      });
+
+      socket2.on("nova mensagem", function(data) {
+
+        // apanhar comentários
+        var conteudo = data.mensagem;
+        var usuario = data.usuario;
+        // console.log(conteudo);
+        conteudo = conteudo.replace(/<!--/g, '&#60;&#33;&#45;&#45;').replace(/-->/g, '&#45;&#45;&#62;');
+        // // apanhar elementos
+        conteudo = conteudo.replace(/</g, '&#60;').replace(/>/g, '&#62;');
+
+        conteudo = "<strong>" + usuario + ":</strong> " + conteudo;
+        $('#messages').append($('<li>').html(conteudo));
+
+        // sessionStorage.setItem('chat', $('#messages').html());
+        // rolagemDoScroll();
+      });
+
+      function rolagemDoScroll() {
+        var tamanhoDoScroll = ($('#messages li').length * 34) - $('#messages').height() + 34;
+        $('#messages').scrollTop(tamanhoDoScroll);
+      }
+
+
+
+      //enviar atividade
+      $("#btnAtividade").on('click', function() {
+        enviarAtividade();
+      });
+
+      function enviarAtividade() {
+        var atividade = $('#descricaoAtividade').val();
+        sessionStorage.setItem('atividade', atividade);
+        socket.emit('enviarAtividade', atividade);
+      }
+      $('#descricaoAtividade').val(sessionStorage.getItem('atividade'));
+
+      // $(document).on('change',()=>{
+      //   $('#m').val("");
+      // });
+
+    });
+  </script>
+
+</body>
+
+</html>

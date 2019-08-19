@@ -1,0 +1,48 @@
+.title-section {
+  background-color: #3D9B41;
+  color: white;
+  padding: 5px;
+  margin-top: 5px;
+  border-radius: 3px;
+}
+
+.logo {
+  text-shadow: 2px 2px 5px #333;
+  color: #FF6464;
+}
+
+iframe {
+  width: 100%;
+  /* float: left; */
+  height: 300px;
+  border: 1px solid black;
+  /* border-left: 0px; */
+}
+
+#messages {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#messages li {
+  padding: 5px 10px;
+}
+
+#messages li:nth-child(odd) {
+  background: #eee;
+}
+
+#chat {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#chat li {
+  padding: 5px 10px;
+}
+
+#chat li:nth-child(odd) {
+  background: #eee;
+}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Professor - grupos | Sharedhtml</title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/master.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-dark bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><code class="logo">&lsaquo;SharedHTML&rsaquo;</code> | Professor</a>
+    <ul class="navbar-nav px-3">
+      <li class="nav-item text-nowrap">
+      </li>
+    </ul>
+  </nav>
+  <main class="container-fluid p-0">
+    <div style="text-align: center;">
+      <h1>Solcite que o estudante acesse o seguinte endereço:</h1>
+      <h1 style="background-color: #F22; color: white;"><span id="ipProfessor"></span><span>:3000</span></h1>
+    </div>
+    <div class="row">
+      <div class="col-md-6 ">
+        <!-- <div style="background: #eee; padding: 10px;"> -->
+        <h1 class="title-section h5">Recebendo as conexões</h1>
+        <ol>
+          <li>Espere todos os estudantes se conectarem</li>
+          <li>Divida-os em duplas</li>
+          <li>Tecle no botão 'Iniciar Atividade' para começar</li>
+        </ol>
+        <form id="formId">
+          <button id='start' type="submit" class="btn btn-primary">Iniciar atividade</button>
+          <hr>
+          <ul style="overflow: auto; height: 80vh; padding-left: 20px;" id='players'></ul>
+          <br>
+        </form>
+      </div>
+
+      <div class="col-md-6" style="height: 100vh;">
+        <h1 class="title-section h5">Atividade</h1>
+        <p>Escreva em HTML a atividade que os estudantes deverão resolver</p>
+        <!-- <button type="button" class="btn btn-primary" id="btnAtividade">Enviar Questão</button><br><br> -->
+        <textarea name="name" style="min-height:50vh; width: 100%;" id="descricaoAtividade"></textarea>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/jquery-3.3.1.slim.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/lib//deparam.js"></script>
+  <script>
+    var socket = io();
+    var dados = "";
+    socket.on('updatePlayerLobby', function(data) {
+      var info = data.nome;
+      var label = "<li><label><strong>" + info;
+      var controle = label + "</strogn> <input type='text' name='" + data.nome + "' id='" + data.nome + "' required placeholder='grupo' ></label></li>";
+      $("#players").append(controle);
+      // document.getElementById('players').value += data.nome + "@"+ data.ip +"\n";
+      // document.getElementById('players').value = "";
+
+      // for(var i = 0; i < data.length; i++){
+      //     document.getElementById('players').value += data[i].nome + "\n";
+      // }
+      // dados += "<li>" + info + "</li>";
+      // sessionStorage.setItem("estudantes", dados);
+    });
+
+    // function startGame() {
+    //   socket.emit('startGame');
+    // }
+    //DADOS DE CONFIGURAÇÃO DOS GRUPOS
+    $(document).ready(function() {
+      $("#formId").submit(function(e) {
+        e.preventDefault();
+        var Form = this;
+        var dados = JSON.stringify($(Form).serializeArray());
+        // sessionStorage.setItem('estudantes', dados);
+        sessionStorage.setItem("estudantes", dados);
+        socket.emit('startGame', dados);
+        enviarAtividade();
+      });
+
+      // $("#btnAtividade").on('click', function() {
+      //   enviarAtividade();
+      // });
+      function enviarAtividade() {
+        var atividade = $('#descricaoAtividade').val();
+	sessionStorage.setItem('atividade', atividade);
+        socket.emit('enviarAtividade', atividade);
+        window.location.href = "/acompanhamento";
+      }
+    });
+  </script>
+
+  <script>
+    getEnderecoIp();
+
+    function getEnderecoIp() {
+      window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection; //compatibility for Firefox and chrome
+      var pc = new RTCPeerConnection({
+          iceServers: []
+        }),
+        noop = function() {};
+      pc.createDataChannel(''); //create a bogus data channel
+      pc.createOffer(pc.setLocalDescription.bind(pc), noop); // create offer and set local description
+      pc.onicecandidate = function(ice) {
+        if (ice && ice.candidate && ice.candidate.candidate) {
+          var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
+          $("#ipProfessor").text(myIP);
+        }
+      };
+    }
+  </script>
+
+</body>
+
+</html>
