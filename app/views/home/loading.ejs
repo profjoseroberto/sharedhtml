@@ -114,7 +114,6 @@
     });
 
     socket.on('startGame', function(dados) {
-      console.log('recebi');
       sessionStorage.setItem('config', dados);
       window.location.href = "/editor";
     });
